@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import Base, engine
-from app.routers import auth_router, user_router
+from app.routers import user_router, auth_router, company_router
 
 def create_tables():
     Base.metadata.create_all(bind=engine)
@@ -14,7 +14,8 @@ def get_application() -> FastAPI:
     # Incluir routers
     app.include_router(auth_router.router)
     app.include_router(user_router.router)
-    
+    app.include_router(company_router.router)
+
     return app
 
 create_tables()
