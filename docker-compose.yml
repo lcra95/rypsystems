@@ -1,12 +1,29 @@
 version: "3.9"
-
 services:
+  redis:
+    image: redis:7.0
+    container_name: my_redis_service  # <-- Cambia el nombre
+    ports:
+      - "6380:6379"
+    networks:
+      - my_network
+
   backend:
     build: ./backend
     container_name: rypsystems_backend
     ports:
-      - "8000:8000"
+      - "8800:8800"
     volumes:
       - ./backend:/app
     env_file:
       - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+    networks:
+      - my_network
+
+networks:
+  my_network:
