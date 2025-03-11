@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
 from pydantic import BaseModel
+from app.database import SessionLocal
 from app.models.user import User
+from app.auth.password_utils import verify_password
 from app.auth.token_manager import create_session_token
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -33,9 +34,8 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     # Aquí deberías comparar contraseñas con hashing (bcrypt, passlib, etc.)
-    if user.password != credentials.password:
+    if not verify_password(credentials.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-
     # Generamos token de sesión
     token = create_session_token(user.id)
 

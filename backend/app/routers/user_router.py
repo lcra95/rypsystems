@@ -4,6 +4,7 @@ from app.auth.auth_dependency import get_current_user_id
 from app.database import SessionLocal
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.models.user import User
+from app.auth.password_utils import hash_password
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -20,15 +21,19 @@ def create_user(
     current_user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
-    # Verificar si el email ya existe
+    # 1. Verificar si el email ya existe
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
 
+    # 2. Hashear la contraseña recibida en texto plano
+    hashed_pw = hash_password(user.password)
+
+    # 3. Guardar en la base de datos
     new_user = User(
         full_name=user.full_name,
         email=user.email,
-        password=user.password,  # aquí en prod harías hashing
+        password=hashed_pw,  # Almacena el hash, NO la contraseña en claro
         status=user.status,
         role=user.role
     )
